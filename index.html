@@ -10,7 +10,8 @@
             margin: auto;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translate(-50%, -50%);
          }
       </style>
    </head>
@@ -20,7 +21,10 @@
          const points = [];
          const half = 500 / 2;
          const melee = 300;
+         const m = Math.max(window.innerWidth, window.innerHeight);
          var canvas = document.getElementById('canvas');
+         canvas.style.width = m;
+         canvas.style.height = m;
          var ctx = canvas.getContext('2d');
          ctx.fillStyle = '#FFF';
          ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -44,7 +48,7 @@
                }
                ctx.fillRect(item.x, item.y, 1, 1);
             });
-         }, 10);
+         }, 11);
       </script>
    </body>
 </html>
