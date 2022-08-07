@@ -1,0 +1,70 @@
+<html>
+   <head>
+      <style>
+         body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+         }
+         canvas {
+            margin: auto;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+         }
+      </style>
+   </head>
+   <body style="margin: 0">
+      <button onclick="start()">Start</button>
+      <canvas id="canvas" width="500" height="500"></canvas>
+      <script>
+         const points = [];
+         const m = Math.max(window.innerWidth, window.innerHeight);
+         const size = m;
+
+         const canvas = document.getElementById('canvas');
+         const ctx = canvas.getContext('2d');
+         canvas.style.width = m;
+         canvas.style.height = m;
+         ctx.canvas.width = size;
+         ctx.canvas.height = size;
+         ctx.setTransform(1, 0, 0, 1, 0, 0);
+         ctx.fillStyle = '#abfe';
+
+         const list = [{ x: size / 2, y: size / 2, n: 100 }];
+
+         let i = 0;
+
+         function start() {
+            console.log(2);
+            while (i < list.length) {
+               const point = list[i];
+
+               ctx.beginPath();
+               ctx.ellipse(point.x, point.y, point.n + 30, point.n + 30, 0, 0, 2 * Math.PI);
+               ctx.fill();
+               ctx.closePath();
+
+               for (let j = 0; j < 8; j++) {
+                  const a = Math.random() * Math.PI * 2;
+                  const x1 = point.x + Math.sin(a) * (j + 30);
+                  const y1 = point.y + Math.cos(a) * (j + 30);
+                  const next = point.n / 8;
+                  list.push({ x: x1, y: y1, n: next });
+                  console.log(point.n, next);
+               }
+               i++;
+
+               if (list.length > 1000) {
+                  console.error('overflow');
+                  i = list.length;
+               }
+            }
+         }
+
+         start();
+      </script>
+   </body>
+</html>

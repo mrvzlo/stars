@@ -1,0 +1,92 @@
+<html>
+   <head>
+      <style>
+         body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+         }
+         canvas {
+            margin: auto;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+         }
+      </style>
+   </head>
+   <body style="margin: 0">
+      <button onclick="start()" style="display: none">Start</button>
+      <canvas id="canvas" width="500" height="500"></canvas>
+      <script>
+         const points = [];
+         const size = Math.min(window.innerWidth, window.innerHeight);
+         const count = 300;
+         const speed = 5;
+
+         const canvas = document.getElementById('canvas');
+         const ctx = canvas.getContext('2d');
+         canvas.style.width = size;
+         canvas.style.height = size;
+         ctx.canvas.width = size;
+         ctx.canvas.height = size;
+         ctx.setTransform(1, 0, 0, 1, 0, 0);
+         ctx.fillStyle = '#fff';
+
+         const list = [];
+
+         function generate() {
+            for (let i = 0; i < count; i++) {
+               const x = Math.random() * size;
+               const y = Math.random() * size;
+               const a = Math.random() * Math.PI * 2;
+               list.push({ x: x, y: y, a: a });
+            }
+         }
+
+         function move() {
+            for (let i = 0; i < count; i++) {
+               const item = list[i];
+               const dx = Math.sin(item.a) * speed;
+               const dy = Math.cos(item.a) * speed;
+               item.x += dx;
+               item.y += dy;
+               if ((dx + item.x < 0 && dx < 0) || (dx + item.x >= size && dx > 0)) {
+                  item.a = Math.PI * 2 - item.a;
+               }
+               if ((dy + item.y < 0 && dy < 0) || (dy + item.y >= size && dy > 0)) {
+                  item.a = Math.PI - item.a;
+               }
+               if (item.a < 0) item.a += Math.PI * 2;
+               ctx.beginPath();
+               ctx.ellipse(item.x, item.y, 2, 2, 0, 0, Math.PI * 2);
+               ctx.fill();
+
+               const spike = 3;
+               ctx.fillRect(item.x - spike, item.y - 1, spike * 2, 2);
+               ctx.fillRect(item.x - 1, item.y - spike, 2, spike * 2);
+            }
+         }
+
+         function drawLines() {}
+
+         function tick() {
+            ctx.clearRect(0, 0, size, size);
+            const startTime = performance.now();
+            move();
+            const endTime = performance.now();
+            const dif = endTime - startTime;
+            if (dif > 10) console.log(dif);
+            setTimeout(tick, 40);
+         }
+
+         function start() {
+            generate();
+            setTimeout(tick, 40);
+         }
+
+         start();
+      </script>
+   </body>
+</html>

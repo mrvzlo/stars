@@ -1,5 +1,7 @@
 <html>
    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
       <style>
          body {
             margin: 0;
@@ -16,58 +18,79 @@
       </style>
    </head>
    <body style="margin: 0">
+      asdad
       <canvas id="canvas" width="500" height="500"></canvas>
       <script>
-         const points = [];
-         const m = Math.max(window.innerWidth, window.innerHeight);
-         const size = m;
+         var points = [];
+         var m = Math.max(window.innerWidth, window.innerHeight);
+         var size = m;
 
-         const canvas = document.getElementById('canvas');
-         const ctx = canvas.getContext('2d');
-         canvas.style.width = m;
-         canvas.style.height = m;
-         ctx.canvas.width = size;
-         ctx.canvas.height = size;
-         ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-         const func = (x) => 1.0069 ** x - 1;
-
-         for (let r = 0; r < size; r++) {
-            points.push({ a: Math.random(), step: r });
-            points.push({ a: Math.random(), step: r });
-            points.push({ a: Math.random(), step: r });
+         function func(x) {
+            return Math.pow(1.0069, x) - 1;
          }
 
-         draw();
-
-         setInterval(() => {
-            ctx.clearRect(0, 0, size, size);
-            points.forEach((item) => {
-               item.step++;
-               if (item.step > size) {
-                  item.step = 0;
-               }
-            });
-            draw();
-         }, 25);
-
          function draw() {
-            points.forEach((p) => {
-               const half = size / 2;
-               const canvas = document.getElementById('canvas');
-               const ctx = canvas.getContext('2d');
-               //const r = (Math.atan((p.step - half) / 100) / Math.PI) * half;
-               //const r = (Math.atan((p.step - half) / 400) / 1.8) * half + half / 5;
-               //const r = (Math.atan((p.step - half) / 400) / 1.8) * half + half / 2;
-               const r = func(p.step);
-               const color = Math.round(r < 100 ? r / 15 + 1 : 9);
+            points.forEach(function (p) {
+               var half = size / 2;
+               var canvas = document.getElementById('canvas');
+               var ctx = canvas.getContext('2d');
+               //var r = (Math.atan((p.step - half) / 100) / Math.PI) * half;
+               //var r = (Math.atan((p.step - half) / 400) / 1.8) * half + half / 5;
+               //var r = (Math.atan((p.step - half) / 400) / 1.8) * half + half / 2;
+               var r = func(p.step);
+               var color = 255;
+               var near = r < 100 ? r / 100 : 1;
+               if (Math.random() >= near) color = 0;
 
-               ctx.fillStyle = `#fff${color}`;
+               var red = color;
+               var green = color;
+               var blue = color;
+               if (Math.random() < 0.5) red = red / 2;
+               if (Math.random() < 0.5) green = green / 2;
+               if (Math.random() < 0.5) blue = blue / 2;
 
-               const x = Math.sin(p.a * Math.PI * 2) * r + half;
-               const y = Math.cos(p.a * Math.PI * 2) * r + half;
+               ctx.fillStyle = 'rgb(' + red + ', ' + green + ', ' + blue + ')';
+               ctx.fillRect(x, y, 1, 1);
+
+               var x = Math.sin(p.a * Math.PI * 2) * r + half;
+               var y = Math.cos(p.a * Math.PI * 2) * r + half;
                ctx.fillRect(x, y, 1, 1);
             });
+         }
+
+         function onLoad() {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            canvas.style.width = m;
+            canvas.style.height = m;
+            ctx.canvas.width = size;
+            ctx.canvas.height = size;
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+            for (var r = 0; r < size; r++) {
+               points.push({ a: Math.random(), step: r });
+               points.push({ a: Math.random(), step: r });
+               points.push({ a: Math.random(), step: r });
+            }
+
+            draw();
+
+            setInterval(function () {
+               ctx.clearRect(0, 0, size, size);
+               points.forEach(function (item) {
+                  item.step++;
+                  if (item.step > size) {
+                     item.step = 0;
+                  }
+               });
+               draw();
+            }, 25);
+         }
+
+         if (window.addEventListener) {
+            window.addEventListener('load', onLoad, false);
+         } else if (window.attachEvent) {
+            window.attachEvent('onload', onLoad);
          }
       </script>
    </body>
