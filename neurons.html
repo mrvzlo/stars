@@ -17,14 +17,14 @@
       </style>
    </head>
    <body style="margin: 0">
-      <button onclick="start()" style="display: none">Start</button>
       <canvas id="canvas" width="500" height="500"></canvas>
       <script>
          const points = [];
          const sizeX = window.innerWidth;
          const sizeY = window.innerHeight;
-         const count = 200;
-         const speed = 5;
+         const count = 300;
+         const spike = 7;
+         const speed = 2;
          const range = Math.min(sizeX, sizeY) / 6;
 
          const canvas = document.getElementById('canvas');
@@ -38,13 +38,22 @@
          ctx.strokeStyle = '#fff';
 
          const list = [];
+         const sortedX = [];
+         //const sortedY = [];
+         const linksX = [];
+         //const linksY = [];
 
          function generate() {
             for (let i = 0; i < count; i++) {
                const x = Math.random() * sizeX;
                const y = Math.random() * sizeY;
                const a = Math.random() * Math.PI * 2;
-               list.push({ x: x, y: y, a: a });
+               const hue = Math.random();
+               list.push({ x: x, y: y, a: a, c: hue });
+               sortedX.push(i);
+               //sortedY.push(i);
+               linksX.push(i);
+               //linksY.push(i);
             }
          }
 
@@ -62,42 +71,76 @@
                   item.a = Math.PI - item.a;
                }
                if (item.a < 0) item.a += Math.PI * 2;
+
+               ctx.fillStyle = hsl2rgb(item.c);
+
                ctx.beginPath();
                ctx.ellipse(item.x, item.y, 2, 2, 0, 0, Math.PI * 2);
                ctx.fill();
 
-               const spike = 4;
                ctx.fillRect(item.x - spike, item.y - 1, spike * 2, 1);
                ctx.fillRect(item.x - 1, item.y - spike, 1, spike * 2);
             }
-            for (let i = 0; i < count; i++) drawLines(i);
+            sortedX.sort((a, b) => list[a].x - list[b].x);
+            for (let i = 0; i < sortedX.length; i++) linksX[sortedX[i]] = i;
          }
 
-         function drawLines(src) {
-            for (let i = 0; i < list.length; i++) {
-               if (i == src) continue;
+         function drawLines(index) {
+            const src = list[index];
+            ctx.strokeStyle = hsl2rgb(src.c);
 
-               const distance = getDistance(list[i], list[src]);
+            let leftDistance = 0;
+            let left = linksX[index];
+            while (left > 1 && leftDistance < range) {
+               left--;
+               const dst = list[sortedX[left]];
+               const distance = getDistance(dst, src);
                if (distance > range) continue;
-               ctx.beginPath();
-               ctx.moveTo(list[i].x, list[i].y);
-               ctx.lineTo(list[src].x, list[src].y);
-               ctx.stroke();
+               drawLine(dst, src);
+               leftDistance = getPointDistance(dst.x, 0, src.x, 0);
+            }
+
+            let rightDistance = 0;
+            let right = linksX[index];
+
+            while (right < list.length - 1 && rightDistance < range) {
+               right++;
+               const dst = list[sortedX[right]];
+               const distance = getDistance(dst, src);
+               if (distance > range) continue;
+               drawLine(dst, src);
+               rightDistance = getPointDistance(dst.x, 0, src.x, 0);
             }
          }
 
+         function drawLine(a, b) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+         }
+
          function getDistance(a, b) {
-            return Math.sqrt((+a.x - b.x) ** 2 + (+a.y - b.y) ** 2);
+            return getPointDistance(a.x, a.y, b.x, b.y);
+         }
+
+         function getPointDistance(ax, ay, bx, by) {
+            return Math.sqrt((+ax - bx) ** 2 + (+ay - by) ** 2);
          }
 
          function tick() {
             ctx.clearRect(0, 0, sizeX, sizeY);
-            const startTime = performance.now();
+            let startTime = performance.now();
             move();
-            const endTime = performance.now();
-            const dif = endTime - startTime;
-            if (dif > 10) console.log(dif);
-            setTimeout(tick, 40);
+            let endTime = performance.now();
+            const difMoving = endTime - startTime;
+
+            startTime = performance.now();
+            for (let i = 0; i < count; i++) drawLines(i);
+            endTime = performance.now();
+            const difDrawing = endTime - startTime;
+            if (difMoving + difDrawing > 10) console.log('moving', difMoving, 'drawing', difDrawing);
+            setTimeout(tick, 10);
          }
 
          function start() {
@@ -106,6 +149,32 @@
          }
 
          start();
+
+         function hsl2rgb(h) {
+            const s = 0.1;
+            const l = 2;
+            const hue2rgb = function hue2rgb(p, q, t) {
+               if (t < 0) t += 1;
+               if (t > 1) t -= 1;
+               if (t < 1 / 6) return p + (q - p) * 6 * t;
+               if (t < 1 / 2) return q;
+               if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+               return p;
+            };
+
+            const q = l * (1 + s);
+            const p = 2 * l - q;
+            const r = ~~(hue2rgb(p, q, h + 1 / 3) * 100);
+            const g = ~~(hue2rgb(p, q, h) * 100);
+            const b = ~~(hue2rgb(p, q, h - 1 / 3) * 100);
+            const res = '#' + toHex(r) + toHex(g) + toHex(b) + 'aa';
+            return res;
+         }
+
+         function toHex(c) {
+            const hex = c.toString(16);
+            return hex.length == 1 ? '0' + hex : hex;
+         }
       </script>
    </body>
 </html>
